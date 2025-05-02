@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: snapshoot_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  user-service:
+    build:
+      context: .                         
+      dockerfile: ./user-service/Dockerfile
+    env_file: ./user-service/.env
+    ports: ["3001:3001"]
+    depends_on: [postgres]
+
+  message-service:
+    build: ./message-service
+    command: npm run dev
+    volumes:
+      - ./message-service:/app
+      - uploads:/app/uploads
+    ports: ["3002:3002"]
+    depends_on: [postgres]
+    env_file: ./message-service/.env
+
+  story-service:
+    build: ./story-service
+    command: npm run dev
+    volumes:
+      - ./story-service:/app
+      - uploads:/app/uploads
+    ports: ["3003:3003"]
+    depends_on: [postgres]
+    env_file: ./story-service/.env
+
+volumes:
+  pgdata:
+  uploads:
